@@ -32,15 +32,20 @@ async function bootstrap() {
         .setTitle("Bilibili TV Anime API")
         .setDescription("API for fetching anime data from Bilibili TV")
         .setVersion("1.0.0")
+        .addServer(`http://localhost:${port}`, "Local environment")
+        .addBearerAuth() // If you plan to add authentication later
         .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup("api-docs", app, document);
 
-    const port = process.env.PORT || 3000;
-    await app.listen(port);
-    console.log(`Server running on port ${port}`);
-    console.log(
-        `Swagger documentation available at http://localhost:${port}/api-docs`
-    );
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup("api-docs", app, document, {
+        swaggerOptions: {
+            persistAuthorization: true,
+            docExpansion: "list",
+            filter: true,
+            showExtensions: true,
+            showCommonExtensions: true,
+            deepLinking: true
+        }
+    });
 }
 bootstrap();
