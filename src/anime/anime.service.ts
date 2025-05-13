@@ -1,32 +1,39 @@
-// src/anime/anime.controller.ts
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AnimeService } from './anime.service';
-import { AnimeTimelineDto } from './dto/anime-timeline.dto';
+import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
-@ApiTags('anime')
-@Controller('api/anime')
-export class AnimeController {
-  constructor(private readonly animeService: AnimeService) {}
+@Injectable()
+export class AnimeService {
+  private readonly logger = new Logger(AnimeService.name);
 
-  @Get('timeline')
-  @ApiOperation({ summary: 'Get anime timeline' })
-  @ApiQuery({
-    name: 'locale',
-    required: false,
-    type: String,
-    description: 'Language locale',
-    example: 'id_ID'
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Anime timeline data' 
-  })
-  @ApiResponse({ 
-    status: 500, 
-    description: 'Server error' 
-  })
-  async getTimeline(@Query() query: AnimeTimelineDto) {
-    return this.animeService.getTimeline(query.locale);
+  constructor(private readonly httpService: HttpService) {}
+
+  async getTimeline(locale: string = 'id_ID') {
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.get('https://api.bilibili.tv/intl/gateway/web/v2/ogv/timeline', {
+          params: {
+            s_locale: locale,
+            platform: 'web'
+          },
+          headers: {
+            'authority': 'api.bilibili.tv',
+            'accept': 'application/json, text/plain, */*',
+            'accept-language': 'en-US,en;q=0.9',
+            'origin': 'https://www.bilibili.tv',
+            'referer': 'https://www.bilibili.tv/id/timeline',
+            'sec-ch-ua': '"Chromium";v="137", "Not/A)Brand";v="24"',
+            'sec-ch-ua-mobile': '?1',
+            'sec-ch-ua-platform': '"Android"',
+            'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36'
+          }
+        })
+      );
+      
+      return data;
+    } catch (error) {
+      this.logger.error(`Error fetching anime timeline: ${error.message}`);
+      throw error;
+    }
   }
 }
