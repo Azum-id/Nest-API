@@ -27,25 +27,28 @@ async function bootstrap() {
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalInterceptors(new TimeoutInterceptor());
 
-    // Swagger setup
-    const config = new DocumentBuilder()
-        .setTitle("Bilibili TV Anime API")
-        .setDescription("API for fetching anime data from Bilibili TV")
-        .setVersion("1.0.0")
-        .addServer(`http://localhost:${port}`, "Local environment")
-        .addBearerAuth() // If you plan to add authentication later
-        .build();
+    const port = process.env.PORT || 3000;
+    await app.listen(port);
+    
+// Swagger setup
+const config = new DocumentBuilder()
+  .setTitle('Bilibili TV Anime API')
+  .setDescription('API for fetching anime data from Bilibili TV')
+  .setVersion('1.0.0')
+  .addServer(`http://localhost:${port}`, 'Local environment')
+  .addBearerAuth()  // If you plan to add authentication later
+  .build();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup("api-docs", app, document, {
-        swaggerOptions: {
-            persistAuthorization: true,
-            docExpansion: "list",
-            filter: true,
-            showExtensions: true,
-            showCommonExtensions: true,
-            deepLinking: true
-        }
-    });
+const document = SwaggerModule.createDocument(app, config);
+SwaggerModule.setup('api-docs', app, document, {
+  swaggerOptions: {
+    persistAuthorization: true,
+    docExpansion: 'list',
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+    deepLinking: true
+  }
+});
 }
 bootstrap();
